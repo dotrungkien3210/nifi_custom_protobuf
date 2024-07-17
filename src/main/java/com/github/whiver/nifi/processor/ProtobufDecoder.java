@@ -33,7 +33,10 @@ import com.github.whiver.nifi.exception.UnknownMessageTypeException;
 import com.github.whiver.nifi.service.ProtobufService;
 import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.InvalidProtocolBufferException;
+import org.apache.nifi.annotation.behavior.DefaultRunDuration;
+import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.behavior.SideEffectFree;
+import org.apache.nifi.annotation.behavior.SupportsBatching;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.flowfile.FlowFile;
@@ -48,6 +51,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 
 @SideEffectFree
+@SupportsBatching(defaultDuration = DefaultRunDuration.TWENTY_FIVE_MILLIS)
+@InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"Protobuf", "decoder", "Google Protocol Buffer"})
 @CapabilityDescription("Decode incoming data encoded using a Google Protocol Buffer Schema.")
 public class ProtobufDecoder extends ProtobufProcessor {
@@ -57,6 +62,9 @@ public class ProtobufDecoder extends ProtobufProcessor {
         final AtomicReference<Relationship> error = new AtomicReference<>();
 
         final FlowFile flowfile = session.get();
+        if (flowfile == null) {
+            return;
+        }
 
         String protobufSchema = flowfile.getAttribute(PROTOBUF_SCHEMA.getName());
         boolean compileSchema = processContext.getProperty(COMPILE_SCHEMA.getName()).asBoolean();

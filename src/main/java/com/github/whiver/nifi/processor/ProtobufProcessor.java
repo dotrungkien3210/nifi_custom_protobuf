@@ -43,7 +43,7 @@ import java.util.*;
 
 public abstract class ProtobufProcessor extends AbstractProcessor {
     /**
-     * NiFi properties of the processor, that can be configured using the Web UI
+     * iFi properties of the processor, that can be configured using the Web UI
      */
     private List<PropertyDescriptor> properties;
 

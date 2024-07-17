@@ -31,7 +31,10 @@ import com.github.whiver.nifi.exception.SchemaCompilationException;
 import com.github.whiver.nifi.exception.SchemaLoadingException;
 import com.github.whiver.nifi.service.ProtobufService;
 import com.google.protobuf.Descriptors;
+import org.apache.nifi.annotation.behavior.DefaultRunDuration;
+import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.behavior.SideEffectFree;
+import org.apache.nifi.annotation.behavior.SupportsBatching;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.flowfile.FlowFile;
@@ -45,6 +48,8 @@ import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
 @SideEffectFree
+@SupportsBatching(defaultDuration = DefaultRunDuration.TWENTY_FIVE_MILLIS)
+@InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"Protobuf", "decoder", "Google Protocol Buffer"})
 @CapabilityDescription("Decode incoming data encoded using a Google Protocol Buffer Schema.")
 public class ProtobufEncoder extends ProtobufProcessor {
@@ -54,6 +59,9 @@ public class ProtobufEncoder extends ProtobufProcessor {
         final AtomicReference<Relationship> error = new AtomicReference<>();
 
         final FlowFile flowfile = session.get();
+        if (flowfile == null) {
+            return;
+        }
 
         // We check if the protobuf.schemaPath property is defined in the flowfile
         String protobufSchema = flowfile.getAttribute(PROTOBUF_SCHEMA.getName());
